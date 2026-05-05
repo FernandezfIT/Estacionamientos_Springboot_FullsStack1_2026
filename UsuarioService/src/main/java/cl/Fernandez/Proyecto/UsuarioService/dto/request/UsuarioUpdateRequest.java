@@ -28,6 +28,6 @@ public class UsuarioUpdateRequest {
     private LocalDate fechaRegistro;
 
     @NotBlank(message="Esta Información es obligatoria")
-    private boolean especial;
+    private boolean necesidades;
 
 }

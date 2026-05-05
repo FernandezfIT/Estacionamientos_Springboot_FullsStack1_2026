@@ -2,10 +2,12 @@ package cl.Fernandez.Proyecto.UsuarioService.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import cl.Fernandez.Proyecto.UsuarioService.dto.request.UsuarioCreateRequest;
+import cl.Fernandez.Proyecto.UsuarioService.dto.request.UsuarioUpdateRequest;
 import cl.Fernandez.Proyecto.UsuarioService.dto.response.UsuarioResponse;
 import cl.Fernandez.Proyecto.UsuarioService.model.Usuario;
 import cl.Fernandez.Proyecto.UsuarioService.repository.UsuarioRepository;
@@ -66,7 +68,57 @@ public class UsuarioService {
 
     // Obtener solo un usuario por ID
     public UsuarioResponse obtenerUsuarioPorId(Integer idUsuario){
-        Usuario usuario = UsuarioRepository.f
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+
+        if (usuario == null) {
+            return null;
+        }
+
+        return mapToDto(usuario);
+    }
+
+    // Actualizar Usuario
+    public UsuarioResponse actualizarusuario(Integer idUsuario, UsuarioUpdateRequest request){
+
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+
+        if (usuario == null) {
+            return null;
+        }
+
+        usuario.setRut(request.getRut());
+        usuario.setNombre(request.getNombre());
+        usuario.setFechaRegistro(request.getFechaRegistro());
+        usuario.setNecesidades(request.isNecesidades());
+
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+
+        return mapToDto(usuarioActualizado);
+
+    }
+
+    // Eliminar Usuario
+    public boolean eliminarUsuario(Integer idUsuario){
+        if (usuarioRepository.existsById(idUsuario)) {
+            usuarioRepository.deleteById(idUsuario);
+            return true;
+        }
+        return false;
+    }
+
+
+    //// Busquedas de clase 2 (adaptadas al ResponseDTO)
+    /// 
+    /// BUSQUEDA POR RUT
+    public List<UsuarioResponse> buscarPorRut(String rutUsuario){
+        return usuarioRepository.findByRutContainingIgnoreCase(rutUsuario)
+            .stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    ///BUSQUEDA POR NOMBRE
+    public List<UsuarioResponse> buscarPorNombre(String rutUsuario){
+    return usuarioRepository.findByNombreContainingIgnoreCase(rutUsuario)
+        .stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
 }
