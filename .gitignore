@@ -1,0 +1,21 @@
+# Variables locales
+.env
+
+# Java / Maven
+**/target/
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Dumps locales de base de datos
+*.sql.bak
+*_backup.sql
+*_dump.sql
