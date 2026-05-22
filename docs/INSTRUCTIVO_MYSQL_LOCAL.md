@@ -24,5 +24,9 @@ Cada integrante debe tener instalado:
 ## 2. Clonar el repositorio
 
 ```bash
-git clone URL_DEL_REPO
-cd NOMBRE_DEL_REPO
+git clone https://github.com/FernandezfIT/Estacionamientos_Springboot_FullsStack1_2026.git
+cd Estacionamientos_Springboot_FullsStack1_2026
+
+Copiar archivo .env.ejemplo a .env para configuracion inicial de Docker de MySql
+
+Win PowerShell -> Copy-Item .env.ejemplo .env

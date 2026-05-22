@@ -1201,4 +1201,3 @@ SHOW DATABASES;
 9. Probar con Postman, Insomnia o navegador.
 10. Subir cambios en una rama propia.
 
-Orden simple. Menos heroísmo. Más entregable.
