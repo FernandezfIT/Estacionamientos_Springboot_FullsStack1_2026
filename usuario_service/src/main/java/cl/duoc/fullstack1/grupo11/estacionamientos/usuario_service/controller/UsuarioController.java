@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.UsuarioCreateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.UsuarioUpdateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioAuthResponse;
+import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioExisteResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -72,4 +73,13 @@ public class UsuarioController {
         UsuarioAuthResponse usuario = usuarioService.obtenerUsuarioAuthPorEmail(email);
         return ResponseEntity.ok(usuario);
     }
+
+    // ENDPOINT QUE DEVUELVE ID de USUARIO para VEHICULO - USO INTERNO
+    @GetMapping("/internal/existe/{idUsuario}")
+    public ResponseEntity<UsuarioExisteResponse> existeUsuarioPorId(@PathVariable Long idUsuario) {
+        UsuarioExisteResponse response = usuarioService.existeUsuarioPorId(idUsuario);
+        return ResponseEntity.ok(response);
+    }
+
+
 }

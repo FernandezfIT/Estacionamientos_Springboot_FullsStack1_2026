@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.UsuarioCreateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.UsuarioUpdateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioAuthResponse;
+import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioExisteResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.exception.RecursoDuplicadoException;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.exception.RolNoEncontradoException;
@@ -100,6 +101,12 @@ public class UsuarioService {
     public void eliminarUsuario(Long idUsuario) {
         Usuario usuario = buscarUsuarioPorId(idUsuario);
         usuarioRepository.delete(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioExisteResponse existeUsuarioPorId(Long idUsuario) {
+        boolean existe = usuarioRepository.existsById(idUsuario);
+        return new UsuarioExisteResponse(idUsuario, existe);
     }
 
     @Transactional(readOnly = true)
