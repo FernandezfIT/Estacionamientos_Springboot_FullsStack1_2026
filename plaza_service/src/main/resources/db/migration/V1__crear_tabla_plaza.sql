@@ -1,0 +1,5 @@
+CREATE TABLE plaza (
+    id_plaza BIGINT AUTO_INCREMENT PRIMARY KEY,
+    codigo_plaza VARCHAR(50) NOT NULL UNIQUE,
+    estado VARCHAR(20) NOT NULL DEFAULT 'Disponible'
+);
