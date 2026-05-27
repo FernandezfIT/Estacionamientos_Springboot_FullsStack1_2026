@@ -1,16 +1,15 @@
-package cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.configuration;
+package cl.duoc.fullstack1.grupo11.estacionamientos.plaza_service.configuration;
 
 import java.io.IOException;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.security.JwtAuthenticationFilter;
+import cl.duoc.fullstack1.grupo11.estacionamientos.plaza_service.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -31,29 +30,9 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/plazas/**")
+                        .authenticated()
 
-                        // Endpoint interno usado por auth_service para validar login
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/auth/email/**").permitAll()
-
-                        // Endpoint interno usado por otro microservicio para validar usuario
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/existe/**").permitAll()
-
-                        // Endpoint interno usado por otro microservicio para busar usuario por rut
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/rut/**").permitAll()
-
-                        // Gestión de usuarios
-                        .requestMatchers("/api/v1/usuarios/**")
-                        .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
-
-                        // Catálogo de roles
-                        .requestMatchers("/api/v1/roles/**")
-                        .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
-
-
-
-                        
-
-                        // El Resto no pasa
                         .anyRequest().denyAll()
                 )
 

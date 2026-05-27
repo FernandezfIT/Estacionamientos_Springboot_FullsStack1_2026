@@ -17,6 +17,7 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.U
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.UsuarioUpdateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioAuthResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioExisteResponse;
+import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioInternoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -79,6 +80,13 @@ public class UsuarioController {
     public ResponseEntity<UsuarioExisteResponse> existeUsuarioPorId(@PathVariable Long idUsuario) {
         UsuarioExisteResponse response = usuarioService.existeUsuarioPorId(idUsuario);
         return ResponseEntity.ok(response);
+    }
+
+    // ENDPOINT QUE DEVUELVE DATOS DE USUARIO POR EL RUT - USO INTERNO -
+    @GetMapping("/internal/rut/{rut}")
+    public ResponseEntity<UsuarioInternoResponse> obtenerUsuarioInternoPorRut(@PathVariable String rut) {
+        UsuarioInternoResponse usuario = usuarioService.obtenerUsuarioInternoPorRut(rut);
+        return ResponseEntity.ok(usuario);
     }
 
 
