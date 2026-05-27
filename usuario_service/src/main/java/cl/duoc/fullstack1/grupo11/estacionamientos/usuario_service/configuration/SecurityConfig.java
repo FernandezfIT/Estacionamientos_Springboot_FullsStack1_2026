@@ -38,6 +38,9 @@ public class SecurityConfig {
                         // Endpoint interno usado por otro microservicio para validar usuario
                         .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/existe/**").permitAll()
 
+                        // Endpoint interno usado por otro microservicio para busar usuario por rut
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/rut/**").permitAll()
+
                         // Gestión de usuarios
                         .requestMatchers("/api/v1/usuarios/**")
                         .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
@@ -45,6 +48,8 @@ public class SecurityConfig {
                         // Catálogo de roles
                         .requestMatchers("/api/v1/roles/**")
                         .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
+
+
 
                         
 

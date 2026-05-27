@@ -101,4 +101,19 @@ public class GlobalExceptionHandler {
                 path
         );
     }
+
+    @ExceptionHandler(PlazaNoDisponibleException.class)
+        public ResponseEntity<ErrorResponse> manejarPlazaNoDisponible(
+        PlazaNoDisponibleException ex,
+        HttpServletRequest request
+    ) {
+        ErrorResponse errorResponse = construirErrorResponse(
+            HttpStatus.CONFLICT,
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
 }

@@ -10,6 +10,7 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.U
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.request.UsuarioUpdateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioAuthResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioExisteResponse;
+import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioInternoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.exception.RecursoDuplicadoException;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.exception.RolNoEncontradoException;
@@ -69,18 +70,20 @@ public class UsuarioService {
         return mapToUsuarioResponse(usuarioGuardado); // Devuelve UsuarioRepsonse sin Pass
     }
 
+
+    
     @Transactional
     public UsuarioResponse actualizarUsuario(Long idUsuario, UsuarioUpdateRequest request) {
         Usuario usuario = buscarUsuarioPorId(idUsuario);
-
+        
         String rutNormalizado = normalizarTexto(request.getRut());
         String emailNormalizado = normalizarEmail(request.getEmail());
 
         validarRutDisponibleParaActualizar(usuario, rutNormalizado);
         validarEmailDisponibleParaActualizar(usuario, emailNormalizado);
-
+        
         Rol rol = buscarRolPorId(request.getIdRol());
-
+        
         usuario.setRut(rutNormalizado);
         usuario.setNombre(normalizarTexto(request.getNombre()));
         usuario.setApellido(normalizarTexto(request.getApellido()));
@@ -93,7 +96,7 @@ public class UsuarioService {
         }
 
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
-
+        
         return mapToUsuarioResponse(usuarioActualizado);
     }
 
@@ -102,48 +105,60 @@ public class UsuarioService {
         Usuario usuario = buscarUsuarioPorId(idUsuario);
         usuarioRepository.delete(usuario);
     }
-
+    
     @Transactional(readOnly = true)
     public UsuarioExisteResponse existeUsuarioPorId(Long idUsuario) {
         boolean existe = usuarioRepository.existsById(idUsuario);
         return new UsuarioExisteResponse(idUsuario, existe);
     }
-
+    
     @Transactional(readOnly = true)
     public UsuarioAuthResponse obtenerUsuarioAuthPorEmail(String email) {
         String emailNormalizado = normalizarEmail(email);
-
+        
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado)
-                .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con el email indicado"));
-
+        .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con el email indicado"));
+        
         return mapToUsuarioAuthResponse(usuario);
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioInternoResponse obtenerUsuarioInternoPorRut(String rut) {
+        String rutNormalizado = normalizarTexto(rut);
+
+        Usuario usuario = usuarioRepository.findByRut(rutNormalizado)
+            .orElseThrow(() -> new UsuarioNoEncontradoException(
+                    "No existe un usuario con el RUT " + rutNormalizado
+            ));
+
+        return mapToUsuarioInternoResponse(usuario);
+    }
+    
     private Usuario buscarUsuarioPorId(Long idUsuario) {
         return usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con ID " + idUsuario));
+        .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con ID " + idUsuario));
     }
-
+    
     private Rol buscarRolPorId(Long idRol) {
         return rolRepository.findById(idRol)
-                .orElseThrow(() -> new RolNoEncontradoException("No existe un rol con ID " + idRol));
+        .orElseThrow(() -> new RolNoEncontradoException("No existe un rol con ID " + idRol));
     }
-
+    
     private void validarRutDisponible(String rut) {
         if (usuarioRepository.existsByRut(rut)) {
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el RUT indicado");
         }
     }
-
+    
     private void validarEmailDisponible(String email) {
         if (usuarioRepository.existsByEmail(email)) {
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el email indicado");
         }
     }
-
+    
     private void validarRutDisponibleParaActualizar(Usuario usuarioActual, String nuevoRut) {
         boolean cambioRut = !usuarioActual.getRut().equalsIgnoreCase(nuevoRut);
-
+        
         if (cambioRut && usuarioRepository.existsByRut(nuevoRut)) {
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el RUT indicado");
         }
@@ -151,10 +166,21 @@ public class UsuarioService {
 
     private void validarEmailDisponibleParaActualizar(Usuario usuarioActual, String nuevoEmail) {
         boolean cambioEmail = !usuarioActual.getEmail().equalsIgnoreCase(nuevoEmail);
-
+        
         if (cambioEmail && usuarioRepository.existsByEmail(nuevoEmail)) {
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el email indicado");
         }
+    }
+    
+    private UsuarioInternoResponse mapToUsuarioInternoResponse(Usuario usuario) {
+        return new UsuarioInternoResponse(
+                usuario.getIdUsuario(),
+                usuario.getRut(),
+                usuario.getNombre(),
+                usuario.getApellido(),
+                usuario.getEmail(),
+                usuario.getRol().getNombre()
+        );
     }
 
     private UsuarioResponse mapToUsuarioResponse(Usuario usuario) {
