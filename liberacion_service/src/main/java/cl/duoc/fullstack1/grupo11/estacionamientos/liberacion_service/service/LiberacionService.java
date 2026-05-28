@@ -29,7 +29,11 @@ public class LiberacionService {
 
     @Transactional
     public LiberacionResponse liberarPlaza(LiberacionRequest request, String authorizationHeader) {
-        PlazaResponse plaza = plazaClient.obtenerPlaza(request.getIdPlaza());
+        //PlazaResponse plaza = plazaClient.obtenerPlaza(request.getIdPlaza());
+        PlazaResponse plaza = plazaClient.obtenerPlaza(
+                request.getIdPlaza(),
+                authorizationHeader
+        );
 
         if (plaza == null) {
             throw new IllegalArgumentException(
@@ -42,8 +46,14 @@ public class LiberacionService {
                     "La plaza " + plaza.getCodigoPlaza() + " no está ocupada ni reservada. Estado actual: " + estadoActual);
         }
 
+        //PlazaResponse plazaActualizada = plazaClient.actualizarEstadoPlaza(
+        //        request.getIdPlaza(), "Disponible");
+
         PlazaResponse plazaActualizada = plazaClient.actualizarEstadoPlaza(
-                request.getIdPlaza(), "Disponible");
+                request.getIdPlaza(),
+                "Disponible",
+                authorizationHeader
+        );
 
         if (plazaActualizada == null) {
             throw new PlazaServiceException(
