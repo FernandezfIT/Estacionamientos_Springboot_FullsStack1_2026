@@ -1,7 +1,9 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +39,17 @@ public class MovimientoController {
     @GetMapping
     public ResponseEntity<List<MovimientoResponse>> listarMovimientos() {
         List<MovimientoResponse> movimientos = movimientoService.listarMovimientos();
+        return ResponseEntity.ok(movimientos);
+    }
+
+    // ENDPOINT para listar movimientos por fecha
+    @GetMapping("/fecha/{fechaMovimiento}")
+    public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorFecha(
+            @PathVariable
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate fechaMovimiento
+    ) {
+        List<MovimientoResponse> movimientos = movimientoService.listarMovimientosPorFecha(fechaMovimiento);
         return ResponseEntity.ok(movimientos);
     }
 

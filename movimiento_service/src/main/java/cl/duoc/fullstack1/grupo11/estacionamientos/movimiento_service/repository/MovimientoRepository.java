@@ -1,5 +1,6 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +24,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
     List<Movimiento> findByCodigoPlaza(String codigoPlaza);
 
     List<Movimiento> findByServicioOrigen(String servicioOrigen);
+
+    List<Movimiento> findByFechaMovimientoBetween(
+        LocalDateTime inicioDia,
+        LocalDateTime finDia
+    );
 }

@@ -1,8 +1,12 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.reporte_service.controller;
 
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +36,21 @@ public class ReporteController {
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
     ) {
         ReporteCompletoResponse reporte = reporteService.generarReporteCompleto(authorizationHeader);
+        return ResponseEntity.ok(reporte);
+    }
+
+    @GetMapping("/resumen/fecha/{fecha}")
+    public ResponseEntity<ReporteResumenResponse> obtenerReporteResumenPorFecha(
+            @PathVariable
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate fecha,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
+    ) {
+        ReporteResumenResponse reporte = reporteService.generarReporteResumenPorFecha(
+                fecha,
+                authorizationHeader
+        );
+    
         return ResponseEntity.ok(reporte);
     }
 }

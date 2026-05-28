@@ -1,6 +1,9 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.service;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -102,6 +105,17 @@ public class MovimientoService {
         String servicioNormalizado = normalizarTexto(servicioOrigen);
 
         return movimientoRepository.findByServicioOrigen(servicioNormalizado)
+                .stream()
+                .map(this::mapToMovimientoResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MovimientoResponse> listarMovimientosPorFecha(LocalDate fechaMovimiento) {
+        LocalDateTime inicioDia = fechaMovimiento.atStartOfDay();
+        LocalDateTime finDia = fechaMovimiento.atTime(LocalTime.MAX);
+    
+        return movimientoRepository.findByFechaMovimientoBetween(inicioDia, finDia)
                 .stream()
                 .map(this::mapToMovimientoResponse)
                 .toList();

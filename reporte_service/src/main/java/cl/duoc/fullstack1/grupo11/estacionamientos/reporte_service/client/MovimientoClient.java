@@ -1,5 +1,6 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.reporte_service.client;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import cl.duoc.fullstack1.grupo11.estacionamientos.reporte_service.client.dto.MovimientoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.reporte_service.exception.MicroservicioNoDisponibleException;
@@ -48,6 +50,38 @@ public class MovimientoClient {
         } catch (RestClientException ex) {
             throw new MicroservicioNoDisponibleException(
                     "No fue posible obtener los movimientos desde movimiento_service", ex);
+        }
+    }
+
+    public List<MovimientoResponse> listarMovimientosPorFecha(
+            LocalDate fecha,
+            String authorizationHeader
+    ) {
+        try {
+            String url = UriComponentsBuilder
+                    .fromUriString(movimientoServiceBaseUrl)
+                    .path("/fecha/{fecha}")
+                    .buildAndExpand(fecha)
+                    .toUriString();
+        
+            HttpEntity<Void> entity = crearHttpEntityConToken(authorizationHeader);
+        
+            ResponseEntity<MovimientoResponse[]> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    MovimientoResponse[].class
+            );
+        
+            MovimientoResponse[] movimientos = response.getBody();
+        
+            return movimientos != null ? Arrays.asList(movimientos) : List.of();
+        
+        } catch (RestClientException ex) {
+            throw new MicroservicioNoDisponibleException(
+                    "No fue posible obtener los movimientos por fecha desde movimiento_service",
+                    ex
+            );
         }
     }
 

@@ -1,5 +1,7 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.cierre_service.client;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -28,7 +30,10 @@ public class ReporteClient {
         this.reporteServiceBaseUrl = reporteServiceBaseUrl;
     }
 
-    public ReporteResumenResponse obtenerResumen(String authorizationHeader) {
+
+    // ESTE HACE UN RESUMEN COMPLETO, NO NOS SIRVE PARA RESUMEN POR FECHA
+    
+/*     public ReporteResumenResponse obtenerResumen(String authorizationHeader) {
         try {
             String url = UriComponentsBuilder
                     .fromUriString(reporteServiceBaseUrl)
@@ -49,6 +54,36 @@ public class ReporteClient {
         } catch (RestClientException ex) {
             throw new MicroservicioNoDisponibleException(
                     "No fue posible conectar con reporte_service",
+                    ex
+            );
+        }
+    } */
+
+    public ReporteResumenResponse obtenerResumenPorFecha(
+        LocalDate fecha,
+        String authorizationHeader
+    ) {
+        try {
+            String url = UriComponentsBuilder
+                    .fromUriString(reporteServiceBaseUrl)
+                    .path("/resumen/fecha/{fecha}")
+                    .buildAndExpand(fecha)
+                    .toUriString();
+
+            HttpEntity<Void> entity = crearHttpEntityConToken(authorizationHeader);
+
+            ResponseEntity<ReporteResumenResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    ReporteResumenResponse.class
+            );
+
+            return response.getBody();
+
+        } catch (RestClientException ex) {
+            throw new MicroservicioNoDisponibleException(
+                    "No fue posible conectar con reporte_service para obtener resumen por fecha",
                     ex
             );
         }

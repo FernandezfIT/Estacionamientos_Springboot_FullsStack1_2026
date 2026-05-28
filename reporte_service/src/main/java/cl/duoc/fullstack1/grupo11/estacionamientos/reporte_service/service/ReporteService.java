@@ -1,5 +1,6 @@
 package cl.duoc.fullstack1.grupo11.estacionamientos.reporte_service.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,6 +32,27 @@ public class ReporteService {
         ResumenPlazas resumenPlazas = construirResumenPlazas(plazas);
         ResumenMovimientos resumenMovimientos = construirResumenMovimientos(movimientos);
 
+        return new ReporteResumenResponse(
+                LocalDateTime.now(),
+                NOMBRE_SERVICIO,
+                resumenPlazas,
+                resumenMovimientos
+        );
+    }
+
+    public ReporteResumenResponse generarReporteResumenPorFecha(
+        LocalDate fecha,
+        String authorizationHeader
+    ) {
+        List<PlazaResponse> plazas = plazaClient.listarPlazas(authorizationHeader);
+        List<MovimientoResponse> movimientos = movimientoClient.listarMovimientosPorFecha(
+                fecha,
+                authorizationHeader
+        );
+    
+        ResumenPlazas resumenPlazas = construirResumenPlazas(plazas);
+        ResumenMovimientos resumenMovimientos = construirResumenMovimientos(movimientos);
+    
         return new ReporteResumenResponse(
                 LocalDateTime.now(),
                 NOMBRE_SERVICIO,

@@ -72,7 +72,12 @@ public class CierreService {
                 authorizationHeader
         );
 
-        ReporteResumenResponse resumenReporte = reporteClient.obtenerResumen(authorizationHeader);
+        //ReporteResumenResponse resumenReporte = reporteClient.obtenerResumen(authorizationHeader);
+
+        ReporteResumenResponse resumenReporte = reporteClient.obtenerResumenPorFecha(
+                fechaHoraCierre.toLocalDate(),
+                authorizationHeader
+        );
 
         List<PlazaInternaResponse> plazasDespuesDelCierre = plazaClient.listarPlazas(authorizationHeader);
 
