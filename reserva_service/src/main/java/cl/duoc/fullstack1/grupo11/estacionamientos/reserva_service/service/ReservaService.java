@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cl.duoc.fullstack1.grupo11.estacionamientos.reserva_service.client.MovimientoClient;
 import cl.duoc.fullstack1.grupo11.estacionamientos.reserva_service.client.PlazaClient;
+import cl.duoc.fullstack1.grupo11.estacionamientos.reserva_service.client.dto.MovimientoCreateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.reserva_service.client.dto.PlazaResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.reserva_service.dto.request.ReservaRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.reserva_service.dto.response.ReservaResponse;
@@ -23,9 +25,10 @@ public class ReservaService {
 
     private final ReservaRepository reservaRepository;
     private final PlazaClient plazaClient;
+    private final MovimientoClient movimientoClient;
 
     @Transactional
-    public ReservaResponse crearReserva(ReservaRequest request) {
+    public ReservaResponse crearReserva(ReservaRequest request, String authorizationHeader) {
         PlazaResponse plaza = plazaClient.obtenerPlaza(request.getIdPlaza());
 
         if (plaza == null) {
@@ -57,6 +60,8 @@ public class ReservaService {
                 plaza.getCodigoPlaza(), request.getIdPlaza(),
                 request.getRutReserva(), request.getPatente());
 
+        registrarMovimientoReserva(reservaGuardada, plaza.getCodigoPlaza(), authorizationHeader);
+
         return mapToReservaResponse(reservaGuardada);
     }
 
@@ -80,6 +85,36 @@ public class ReservaService {
         reservaRepository.delete(reserva);
 
         log.info("Reserva ID {} eliminada - plaza ID {}", idReserva, reserva.getIdPlaza());
+    }
+
+    private void registrarMovimientoReserva(
+            Reserva reserva,
+            String codigoPlaza,
+            String authorizationHeader
+    ) {
+        try {
+            MovimientoCreateRequest movimientoRequest = new MovimientoCreateRequest(
+                    "RESERVA",
+                    null,
+                    reserva.getRutReserva(),
+                    null,
+                    reserva.getPatente(),
+                    reserva.getIdPlaza(),
+                    codigoPlaza,
+                    reserva.getIdReserva(),
+                    "reserva_service",
+                    "Reserva de visita registrada correctamente"
+            );
+
+            movimientoClient.registrarMovimiento(movimientoRequest, authorizationHeader);
+
+        } catch (Exception ex) {
+            log.warn(
+                    "No fue posible registrar movimiento de reserva para idReserva {}. Motivo: {}",
+                    reserva.getIdReserva(),
+                    ex.getMessage()
+            );
+        }
     }
 
     private Reserva buscarReservaPorId(Long idReserva) {
