@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cl.duoc.fullstack1.grupo11.estacionamientos.liberacion_service.client.MovimientoClient;
 import cl.duoc.fullstack1.grupo11.estacionamientos.liberacion_service.client.PlazaClient;
+import cl.duoc.fullstack1.grupo11.estacionamientos.liberacion_service.client.dto.MovimientoCreateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.liberacion_service.client.dto.PlazaResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.liberacion_service.dto.request.LiberacionRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.liberacion_service.dto.response.LiberacionResponse;
@@ -23,9 +25,10 @@ public class LiberacionService {
 
     private final LiberacionRepository liberacionRepository;
     private final PlazaClient plazaClient;
+    private final MovimientoClient movimientoClient;
 
     @Transactional
-    public LiberacionResponse liberarPlaza(LiberacionRequest request) {
+    public LiberacionResponse liberarPlaza(LiberacionRequest request, String authorizationHeader) {
         PlazaResponse plaza = plazaClient.obtenerPlaza(request.getIdPlaza());
 
         if (plaza == null) {
@@ -55,6 +58,8 @@ public class LiberacionService {
         log.info("Plaza {} (ID {}) liberada. Estado anterior: {}",
                 plaza.getCodigoPlaza(), request.getIdPlaza(), estadoActual);
 
+        registrarMovimientoSalida(liberacionGuardada, plaza.getCodigoPlaza(), authorizationHeader);
+
         return mapToLiberacionResponse(liberacionGuardada);
     }
 
@@ -70,6 +75,36 @@ public class LiberacionService {
     public LiberacionResponse obtenerLiberacionPorId(Long idLiberacion) {
         Liberacion liberacion = buscarLiberacionPorId(idLiberacion);
         return mapToLiberacionResponse(liberacion);
+    }
+
+    private void registrarMovimientoSalida(
+            Liberacion liberacion,
+            String codigoPlaza,
+            String authorizationHeader
+    ) {
+        try {
+            MovimientoCreateRequest movimientoRequest = new MovimientoCreateRequest(
+                    "SALIDA",
+                    null,
+                    null,
+                    null,
+                    null,
+                    liberacion.getIdPlaza(),
+                    codigoPlaza,
+                    liberacion.getIdLiberacion(),
+                    "liberacion_service",
+                    "Salida registrada y plaza liberada correctamente"
+            );
+
+            movimientoClient.registrarMovimiento(movimientoRequest, authorizationHeader);
+
+        } catch (Exception ex) {
+            log.warn(
+                    "No fue posible registrar movimiento de salida para idLiberacion {}. Motivo: {}",
+                    liberacion.getIdLiberacion(),
+                    ex.getMessage()
+            );
+        }
     }
 
     private Liberacion buscarLiberacionPorId(Long idLiberacion) {
