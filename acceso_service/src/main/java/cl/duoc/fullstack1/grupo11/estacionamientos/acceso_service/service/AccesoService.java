@@ -2,12 +2,16 @@ package cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.MovimientoClient;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.PlazaClient;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.UsuarioClient;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.VehiculoClient;
+import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.dto.MovimientoCreateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.dto.PlazaInternaResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.dto.UsuarioInternoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.client.dto.VehiculoInternoResponse;
@@ -27,10 +31,16 @@ public class AccesoService {
     private static final String ESTADO_AUTORIZADO = "AUTORIZADO";
     private static final String OBSERVACION_ACCESO_AUTORIZADO = "Acceso autorizado correctamente";
 
+    private static final Logger log = LoggerFactory.getLogger(AccesoService.class);
+
+    private static final String TIPO_MOVIMIENTO_ACCESO = "ACCESO";
+    private static final String SERVICIO_ORIGEN = "acceso_service";
+
     private final AccesoRepository accesoRepository;
     private final UsuarioClient usuarioClient;
     private final VehiculoClient vehiculoClient;
     private final PlazaClient plazaClient;
+    private final MovimientoClient movimientoClient;
 
     @Transactional(readOnly = true)
     public List<AccesoResponse> listarAccesos() {
@@ -114,6 +124,8 @@ public class AccesoService {
 
         Acceso accesoGuardado = accesoRepository.save(acceso);
 
+        registrarMovimientoAcceso(accesoGuardado, authorizationHeader);
+
         return mapToAccesoResponse(accesoGuardado);
     }
 
@@ -193,5 +205,34 @@ public class AccesoService {
 
     private String normalizarTexto(String texto) {
         return texto.trim();
+    }
+
+    private void registrarMovimientoAcceso(
+        Acceso acceso,
+        String authorizationHeader
+    ) {
+        try {
+            MovimientoCreateRequest movimientoRequest = new MovimientoCreateRequest(
+                    TIPO_MOVIMIENTO_ACCESO,
+                    acceso.getIdUsuario(),
+                    acceso.getRutUsuario(),
+                    acceso.getIdVehiculo(),
+                    acceso.getPatente(),
+                    acceso.getIdPlaza(),
+                    acceso.getCodigoPlaza(),
+                    acceso.getIdAcceso(),
+                    SERVICIO_ORIGEN,
+                    "Ingreso autorizado al estacionamiento"
+            );
+        
+            movimientoClient.registrarMovimiento(movimientoRequest, authorizationHeader);
+        
+        } catch (Exception ex) {
+            log.warn(
+                    "No fue posible registrar movimiento de acceso para idAcceso {}. Motivo: {}",
+                    acceso.getIdAcceso(),
+                    ex.getMessage()
+            );
+        }
     }
 }
