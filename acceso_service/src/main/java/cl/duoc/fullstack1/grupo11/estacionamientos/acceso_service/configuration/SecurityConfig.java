@@ -1,4 +1,4 @@
-package cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.configuration;
+package cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.configuration;
 
 import java.io.IOException;
 
@@ -10,7 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.security.JwtAuthenticationFilter;
+import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private static final String JEFE_SEGURIDAD = "Jefe_Seguridad";
+    private static final String JEFE_SSDD = "Jefe_SSDD";
+    private static final String GUARDIA = "Guardia";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,28 +36,19 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Endpoint interno usado por auth_service para validar login
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/auth/email/**").permitAll()
+                        // Registrar acceso
+                        .requestMatchers(HttpMethod.POST, "/api/v1/accesos")
+                        .hasAnyAuthority(JEFE_SEGURIDAD, JEFE_SSDD, GUARDIA)
 
-                        // Endpoint interno usado por otro microservicio para validar usuario
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/existe/**").permitAll()
+                        // Listar todos los accesos
+                        .requestMatchers(HttpMethod.GET, "/api/v1/accesos")
+                        .hasAnyAuthority(JEFE_SEGURIDAD, JEFE_SSDD)
 
-                        // Endpoint interno usado por otro microservicio para busar usuario por rut
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/rut/**").permitAll()
+                        // Consultas específicas de acceso
+                        .requestMatchers(HttpMethod.GET, "/api/v1/accesos/**")
+                        .hasAnyAuthority(JEFE_SEGURIDAD, JEFE_SSDD, GUARDIA)
 
-                        // Gestión de usuarios
-                        .requestMatchers("/api/v1/usuarios/**")
-                        .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
-
-                        // Catálogo de roles
-                        .requestMatchers("/api/v1/roles/**")
-                        .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
-
-
-
-                        
-
-                        // El Resto no pasa
+                        // Todo lo demás queda cerrado
                         .anyRequest().denyAll()
                 )
 

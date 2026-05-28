@@ -35,6 +35,12 @@ public class PlazaController {
         return ResponseEntity.ok(plaza);
     }
 
+    @GetMapping("/codigo/{codigoPlaza}")
+    public ResponseEntity<PlazaResponse> obtenerPlazaPorCodigo(@PathVariable String codigoPlaza) {
+        PlazaResponse plaza = plazaService.obtenerPlazaPorCodigo(codigoPlaza);
+        return ResponseEntity.ok(plaza);
+    }
+
     @PutMapping("/{idPlaza}")
     public ResponseEntity<PlazaResponse> actualizarEstadoPlaza(
             @PathVariable Long idPlaza,
@@ -42,5 +48,11 @@ public class PlazaController {
     ) {
         PlazaResponse plazaActualizada = plazaService.actualizarEstadoPlaza(idPlaza, request);
         return ResponseEntity.ok(plazaActualizada);
+    }
+
+    @PutMapping("/codigo/{codigoPlaza}/ocupar")
+    public ResponseEntity<PlazaResponse> ocuparPlazaPorCodigo(@PathVariable String codigoPlaza) {
+        PlazaResponse plazaOcupada = plazaService.ocuparPlazaPorCodigo(codigoPlaza);
+        return ResponseEntity.ok(plazaOcupada);
     }
 }
