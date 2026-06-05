@@ -21,8 +21,13 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.repository.Ro
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -32,16 +37,34 @@ public class UsuarioService {
     // LISTA TODOS LOS USUARIOS ALMACENADOS - No Recibe nada
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listarUsuarios() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String usuarioLogeado = auth.getName();
+
+        log.info("Iniciando búsqueda de usuarios registrados.");
+        log.info("Usuario={} realizó búsqueda", usuarioLogeado);
+        List<Usuario> usuariosEncontrados = usuarioRepository.findAll();
+        log.info("Se encontraron ={} usuarios", usuariosEncontrados.size());
         return usuarioRepository.findAll()
                 .stream()
                 .map(this::mapToUsuarioResponse)
                 .toList();
     }
 
-    // BUSCA USUARIO POR SU ID - Recibe idUsuario 
+    // BUSCA USUARIO POR SU ID - Recibe idUsuario
     @Transactional(readOnly = true)
     public UsuarioResponse obtenerUsuarioPorId(Long idUsuario) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String usuarioLogueado = auth.getName();
+
+        log.info("Iniciando búsqueda de Usuario por Id={}", idUsuario);
+        log.info("Usuario={} realizó búsqueda", usuarioLogueado);
+
         Usuario usuario = buscarUsuarioPorId(idUsuario);
+
         return mapToUsuarioResponse(usuario);
     }
 
@@ -50,40 +73,52 @@ public class UsuarioService {
     public UsuarioResponse crearUsuario(UsuarioCreateRequest request) {
         String rutNormalizado = normalizarTexto(request.getRut()); // Normaliza el RUT
         String emailNormalizado = normalizarEmail(request.getEmail()); // Normaliza el correo
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String usuarioLogueado = auth.getName();
+
+        log.info("Iniciando registro de usuario nuevo.");
+        log.info("Usuario={} realizó registro.", usuarioLogueado);
 
         validarRutDisponible(rutNormalizado); // Valida que RUT no se repita
         validarEmailDisponible(emailNormalizado); // Valida que correo no se repita
 
         Rol rol = buscarRolPorId(request.getIdRol()); // Busca el Rol por ID - Si no lo encuentra, arroja error.
 
-        Usuario usuario = new Usuario();                                //
-        usuario.setRut(rutNormalizado);                                 //
-        usuario.setNombre(normalizarTexto(request.getNombre()));        // Setea los datos al usuario desde request
-        usuario.setApellido(normalizarTexto(request.getApellido()));    //
-        usuario.setEmail(emailNormalizado);                             //
+        Usuario usuario = new Usuario(); // Se instancia usuario
+        usuario.setRut(rutNormalizado); // Se setea rut validado y normalizado
+        usuario.setNombre(normalizarTexto(request.getNombre())); // Setea los datos al usuario desde request
+        usuario.setApellido(normalizarTexto(request.getApellido())); // Setea los datos al usuario desde request
+        usuario.setEmail(emailNormalizado); // Se setea email validado y normalizado
         usuario.setPassword(passwordEncoder.encode(request.getPassword())); // Encripta pass recibida en request
-        usuario.setTelefono(normalizarTexto(request.getTelefono()));    // Normaliza y sete telefono
-        usuario.setRol(rol);                                            // Setea rol
+        usuario.setTelefono(normalizarTexto(request.getTelefono())); // Normaliza y setea telefono
+        usuario.setRol(rol); // Setea rol
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
+        log.info("Se crea Usuario ID={}", usuario.getIdUsuario());
         return mapToUsuarioResponse(usuarioGuardado); // Devuelve UsuarioRepsonse sin Pass
     }
 
-
-    
     @Transactional
     public UsuarioResponse actualizarUsuario(Long idUsuario, UsuarioUpdateRequest request) {
         Usuario usuario = buscarUsuarioPorId(idUsuario);
-        
+
         String rutNormalizado = normalizarTexto(request.getRut());
         String emailNormalizado = normalizarEmail(request.getEmail());
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String usuarioLogueado = auth.getName();
+
+        log.info("Iniciando Actualización de usuario Id={}.", idUsuario);
+        log.info("Usuario={} realizó actualización.", usuarioLogueado);
+
         validarRutDisponibleParaActualizar(usuario, rutNormalizado);
         validarEmailDisponibleParaActualizar(usuario, emailNormalizado);
-        
+
         Rol rol = buscarRolPorId(request.getIdRol());
-        
+
         usuario.setRut(rutNormalizado);
         usuario.setNombre(normalizarTexto(request.getNombre()));
         usuario.setApellido(normalizarTexto(request.getApellido()));
@@ -95,8 +130,10 @@ public class UsuarioService {
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
+
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
-        
+         log.info("Se actualiza Usuario ID={}", usuarioActualizado.getIdUsuario());
+
         return mapToUsuarioResponse(usuarioActualizado);
     }
 
@@ -105,20 +142,20 @@ public class UsuarioService {
         Usuario usuario = buscarUsuarioPorId(idUsuario);
         usuarioRepository.delete(usuario);
     }
-    
+
     @Transactional(readOnly = true)
     public UsuarioExisteResponse existeUsuarioPorId(Long idUsuario) {
         boolean existe = usuarioRepository.existsById(idUsuario);
         return new UsuarioExisteResponse(idUsuario, existe);
     }
-    
+
     @Transactional(readOnly = true)
     public UsuarioAuthResponse obtenerUsuarioAuthPorEmail(String email) {
         String emailNormalizado = normalizarEmail(email);
-        
+
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado)
-        .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con el email indicado"));
-        
+                .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con el email indicado"));
+
         return mapToUsuarioAuthResponse(usuario);
     }
 
@@ -127,51 +164,60 @@ public class UsuarioService {
         String rutNormalizado = normalizarTexto(rut);
 
         Usuario usuario = usuarioRepository.findByRut(rutNormalizado)
-            .orElseThrow(() -> new UsuarioNoEncontradoException(
-                    "No existe un usuario con el RUT " + rutNormalizado
-            ));
+                .orElseThrow(() -> new UsuarioNoEncontradoException(
+                        "No existe un usuario con el RUT " + rutNormalizado));
 
         return mapToUsuarioInternoResponse(usuario);
     }
-    
+
     private Usuario buscarUsuarioPorId(Long idUsuario) {
         return usuarioRepository.findById(idUsuario)
-        .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con ID " + idUsuario));
+                .orElseThrow(() -> {
+                    log.warn("Usuario no encontrado id={}", idUsuario);
+                    return new UsuarioNoEncontradoException("No existe un usuario con ID " + idUsuario);
+                });
     }
-    
+
     private Rol buscarRolPorId(Long idRol) {
         return rolRepository.findById(idRol)
-        .orElseThrow(() -> new RolNoEncontradoException("No existe un rol con ID " + idRol));
+                .orElseThrow(() -> {
+                    log.warn("Usuario no encontrado id={}", idRol);
+                    return new RolNoEncontradoException("No existe un rol con ID " + idRol);
+                });
     }
-    
+
     private void validarRutDisponible(String rut) {
         if (usuarioRepository.existsByRut(rut)) {
+            log.warn("Conflicto con rut={}", rut);
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el RUT indicado");
         }
     }
-    
+
     private void validarEmailDisponible(String email) {
         if (usuarioRepository.existsByEmail(email)) {
+            log.warn("Conflicto con email={}", email);
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el email indicado");
         }
     }
-    
+
     private void validarRutDisponibleParaActualizar(Usuario usuarioActual, String nuevoRut) {
         boolean cambioRut = !usuarioActual.getRut().equalsIgnoreCase(nuevoRut);
-        
+
         if (cambioRut && usuarioRepository.existsByRut(nuevoRut)) {
+            log.warn("Conflicto con rut={}", nuevoRut);
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el RUT indicado");
         }
     }
 
     private void validarEmailDisponibleParaActualizar(Usuario usuarioActual, String nuevoEmail) {
         boolean cambioEmail = !usuarioActual.getEmail().equalsIgnoreCase(nuevoEmail);
-        
+
         if (cambioEmail && usuarioRepository.existsByEmail(nuevoEmail)) {
+            log.warn("Conflicto con email={}", nuevoEmail);
             throw new RecursoDuplicadoException("Ya existe un usuario registrado con el email indicado");
         }
     }
-    
+
     private UsuarioInternoResponse mapToUsuarioInternoResponse(Usuario usuario) {
         return new UsuarioInternoResponse(
                 usuario.getIdUsuario(),
@@ -179,8 +225,7 @@ public class UsuarioService {
                 usuario.getNombre(),
                 usuario.getApellido(),
                 usuario.getEmail(),
-                usuario.getRol().getNombre()
-        );
+                usuario.getRol().getNombre());
     }
 
     private UsuarioResponse mapToUsuarioResponse(Usuario usuario) {
@@ -193,8 +238,7 @@ public class UsuarioService {
                 usuario.getTelefono(),
                 usuario.getFechaCreacion(),
                 usuario.getRol().getIdRol(),
-                usuario.getRol().getNombre()
-        );
+                usuario.getRol().getNombre());
     }
 
     private UsuarioAuthResponse mapToUsuarioAuthResponse(Usuario usuario) {
@@ -205,8 +249,7 @@ public class UsuarioService {
                 usuario.getApellido(),
                 usuario.getEmail(),
                 usuario.getPassword(),
-                usuario.getRol().getNombre()
-        );
+                usuario.getRol().getNombre());
     }
 
     private String normalizarEmail(String email) {

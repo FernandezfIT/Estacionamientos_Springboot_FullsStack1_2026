@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -27,7 +29,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
@@ -41,7 +43,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
@@ -55,7 +57,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
@@ -75,7 +77,7 @@ public class GlobalExceptionHandler {
                 mensaje,
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
@@ -89,7 +91,7 @@ public class GlobalExceptionHandler {
                 "El cuerpo de la solicitud no tiene un formato JSON válido",
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
@@ -103,7 +105,7 @@ public class GlobalExceptionHandler {
                 "No se pudo completar la operación porque existen datos duplicados o referencias inválidas",
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
@@ -117,7 +119,7 @@ public class GlobalExceptionHandler {
                 "Ocurrió un error interno en usuario_service",
                 request.getRequestURI()
         );
-
+        log.error("Se registra error", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 

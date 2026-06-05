@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Archivo de configuración de Logback.
+    Aquí se define:
+    - dónde guardar logs
+    - formato de logs
+    - niveles de logs
+    - rotación de archivos
+-->
+<configuration>
+
+    <!--
+        APPENDER CONSOLA
+
+        Un appender define dónde se enviarán los logs.
+
+        Este appender envía los logs a la consola/terminal.
+        Los logs aparecerán en:
+        - IntelliJ
+        - VSCode
+        - Terminal
+        - Docker logs
+    -->
+    <appender name="CONSOLE"
+              class="ch.qos.logback.core.ConsoleAppender">
+
+        <!--
+            Encoder:
+            Define cómo se verá el log.
+        -->
+        <encoder>
+
+            <!--
+                Pattern:
+                Define el formato visual del log.
+
+                %d{yyyy-MM-dd HH:mm:ss}
+                    → Fecha y hora
+
+                [%thread]
+                    → Hilo/thread que ejecuta el proceso
+
+                %-5level
+                    → Nivel del log (INFO, WARN, ERROR)
+
+                %logger{36}
+                    → Clase que generó el log
+                    → Máximo 36 caracteres
+
+                %msg
+                    → Mensaje del log
+
+                %n
+                    → Salto de línea
+            -->
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+
+        </encoder>
+
+    </appender>
+
+    <!--
+        APPENDER JSON
+
+        Este appender guarda logs en archivos JSON estructurados.
+
+        Muy útil para:
+        - ELK Stack
+        - Kibana
+        - Grafana
+        - Loki
+        - Observabilidad
+    -->
+    <appender name="JSON"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <!--
+            Archivo actual donde se guardan los logs.
+            La carpeta logs se crea automáticamente.
+        -->
+        <file>logs/app.json</file>
+
+        <!--
+            Rolling Policy:
+            Define cómo rotar/generar nuevos archivos.
+
+            En este caso:
+            - crea un archivo nuevo cada día
+        -->
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+            <!--
+                Nombre del archivo diario.
+
+                Ejemplo:
+                logs/app-2026-05-14.json
+            -->
+            <fileNamePattern>
+                logs/app-%d{yyyy-MM-dd}.json
+            </fileNamePattern>
+
+            <!--
+                Cantidad de días de logs a conservar.
+
+                En este caso:
+                - mantiene 30 días
+                - luego elimina automáticamente los antiguos
+            -->
+            <maxHistory>30</maxHistory>
+
+        </rollingPolicy>
+
+        <!--
+            Encoder JSON
+
+            Convierte los logs a formato JSON estructurado.
+
+            Ejemplo:
+            {
+              "level":"INFO",
+              "message":"Fiesta creada"
+            }
+        -->
+        <encoder
+                class="net.logstash.logback.encoder.LogstashEncoder" />
+
+    </appender>
+
+    <!--
+        ROOT LOGGER
+
+        Logger principal global del sistema.
+
+        Todos los logs pasan por aquí.
+    -->
+    <root level="INFO">
+
+        <!--
+            Nivel INFO significa que se mostrarán:
+
+            - INFO
+            - WARN
+            - ERROR
+
+            NO se mostrarán:
+            - DEBUG
+            - TRACE
+        -->
+
+        <!--
+            Enviar logs al appender consola
+        -->
+        <appender-ref ref="CONSOLE"/>
+
+        <!--
+            Enviar logs al appender JSON
+        -->
+        <appender-ref ref="JSON"/>
+
+    </root>
+
+</configuration>

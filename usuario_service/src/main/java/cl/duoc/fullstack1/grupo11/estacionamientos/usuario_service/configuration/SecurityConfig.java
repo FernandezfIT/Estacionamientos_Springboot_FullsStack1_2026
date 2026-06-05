@@ -18,89 +18,93 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .csrf(csrf -> csrf.disable())
+                http
+                                .csrf(csrf -> csrf.disable())
 
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .authorizeHttpRequests(auth -> auth
+                                .authorizeHttpRequests(auth -> auth
 
-                        // Endpoint interno usado por auth_service para validar login
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/auth/email/**").permitAll()
+                                                // Acceso Publico para Swagger
+                                                .requestMatchers("api/v1/public/**").permitAll()
+                                                .requestMatchers("/api/v1/public/**",
+                                                                "/doc/swagger-ui.html",
+                                                                "/doc/swagger-ui/index.html",
+                                                                "/doc/swagger-ui/**",
+                                                                "/swagger-ui.html",
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs",
+                                                                "/v3/api-docs/**")
+                                                .permitAll()
 
-                        // Endpoint interno usado por otro microservicio para validar usuario
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/existe/**").permitAll()
+                                                // Endpoint interno usado por auth_service para validar login
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/auth/email/**")
+                                                .permitAll()
 
-                        // Endpoint interno usado por otro microservicio para busar usuario por rut
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/rut/**").permitAll()
+                                                // Endpoint interno usado por otro microservicio para validar usuario
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/existe/**")
+                                                .permitAll()
 
-                        // Gestión de usuarios
-                        .requestMatchers("/api/v1/usuarios/**")
-                        .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
+                                                // Endpoint interno usado por otro microservicio para busar usuario por
+                                                // rut
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/internal/rut/**")
+                                                .permitAll()
 
-                        // Catálogo de roles
-                        .requestMatchers("/api/v1/roles/**")
-                        .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
+                                                // Gestión de usuarios
+                                                .requestMatchers("/api/v1/usuarios/**")
+                                                .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
 
+                                                // Catálogo de roles
+                                                .requestMatchers("/api/v1/roles/**")
+                                                .hasAnyAuthority("Jefe_Seguridad", "Jefe_SSDD")
 
+                                                // El Resto no pasa
+                                                .anyRequest().denyAll())
 
-                        
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint(
+                                                                (request, response, authException) -> escribirErrorJson(
+                                                                                response,
+                                                                                HttpServletResponse.SC_UNAUTHORIZED,
+                                                                                "Unauthorized",
+                                                                                "Token JWT requerido o inválido"))
+                                                .accessDeniedHandler((request, response,
+                                                                accessDeniedException) -> escribirErrorJson(
+                                                                                response,
+                                                                                HttpServletResponse.SC_FORBIDDEN,
+                                                                                "Forbidden",
+                                                                                "No tienes permisos para acceder a este recurso")))
 
-                        // El Resto no pasa
-                        .anyRequest().denyAll()
-                )
+                                .formLogin(form -> form.disable())
 
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) ->
-                                escribirErrorJson(
-                                        response,
-                                        HttpServletResponse.SC_UNAUTHORIZED,
-                                        "Unauthorized",
-                                        "Token JWT requerido o inválido"
-                                )
-                        )
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                escribirErrorJson(
-                                        response,
-                                        HttpServletResponse.SC_FORBIDDEN,
-                                        "Forbidden",
-                                        "No tienes permisos para acceder a este recurso"
-                                )
-                        )
-                )
+                                .httpBasic(httpBasic -> httpBasic.disable())
 
-                .formLogin(form -> form.disable())
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                .httpBasic(httpBasic -> httpBasic.disable())
+                return http.build();
+        }
 
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        private void escribirErrorJson(
+                        HttpServletResponse response,
+                        int status,
+                        String error,
+                        String message) throws IOException {
+                response.setStatus(status);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
 
-        return http.build();
-    }
-
-    private void escribirErrorJson(
-            HttpServletResponse response,
-            int status,
-            String error,
-            String message
-    ) throws IOException {
-        response.setStatus(status);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        response.getWriter().write("""
-                {
-                  "status": %d,
-                  "error": "%s",
-                  "message": "%s"
-                }
-                """.formatted(status, error, message));
-    }
+                response.getWriter().write("""
+                                {
+                                  "status": %d,
+                                  "error": "%s",
+                                  "message": "%s"
+                                }
+                                """.formatted(status, error, message));
+        }
 }
