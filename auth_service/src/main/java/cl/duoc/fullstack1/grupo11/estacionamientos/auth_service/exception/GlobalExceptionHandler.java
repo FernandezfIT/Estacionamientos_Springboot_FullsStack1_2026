@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import cl.duoc.fullstack1.grupo11.estacionamientos.auth_service.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -26,7 +28,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
-
+        log.error("se registra error", ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
@@ -40,7 +42,7 @@ public class GlobalExceptionHandler {
                 "No fue posible conectar con usuario_service",
                 request.getRequestURI()
         );
-
+        log.error("se registra error", ex);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
     }
 
@@ -60,7 +62,7 @@ public class GlobalExceptionHandler {
                 mensaje,
                 request.getRequestURI()
         );
-
+        log.error("se registra error", ex);
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
@@ -74,7 +76,7 @@ public class GlobalExceptionHandler {
                 "El cuerpo de la solicitud no tiene un formato JSON válido",
                 request.getRequestURI()
         );
-
+        log.error("se registra error", ex);
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
@@ -88,7 +90,7 @@ public class GlobalExceptionHandler {
                 "Ocurrió un error interno en auth_service",
                 request.getRequestURI()
         );
-
+        log.error("se registra error", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
@@ -98,11 +100,14 @@ public class GlobalExceptionHandler {
             String path
     ) {
         return new ErrorResponse(
+                
                 LocalDateTime.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 message,
+                path,
                 path
+                
         );
     }
 }
