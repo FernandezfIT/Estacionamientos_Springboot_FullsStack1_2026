@@ -21,6 +21,17 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // Configuración Swagger
+                        .requestMatchers("api/v1/public/**").permitAll()
+                        .requestMatchers("/api/v1/public/**",
+                        "/doc/swagger-ui.html",
+                        "/doc/swagger-ui/index.html",
+                        "/doc/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**")
+                        .permitAll()
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .anyRequest().denyAll()
                 )

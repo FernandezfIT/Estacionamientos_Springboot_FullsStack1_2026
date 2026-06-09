@@ -1,0 +1,21 @@
+package cl.duoc.fullstack1.grupo11.estacionamientos.auth_service.configuration;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+
+@Configuration
+public class SwaggerConfig {
+        @Bean
+    public OpenAPI customOpenAPI(){
+        return new OpenAPI()
+            .info(new Info()
+        .title("API de autentificion")
+        .version("1.0")
+        .description("Api que entrega el token JWT")
+        );   
+    }  
+    
+}
