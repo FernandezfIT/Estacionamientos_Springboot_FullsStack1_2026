@@ -56,6 +56,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/vehiculos/**")
                         .hasAnyAuthority(JEFE_SEGURIDAD, JEFE_SSDD)
 
+                        // Configuración Swagger
+                        .requestMatchers("api/v1/public/**").permitAll()
+                        .requestMatchers("/api/v1/public/**",
+                        "/doc/swagger-ui.html",
+                        "/doc/swagger-ui/index.html",
+                        "/doc/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**")
+                        .permitAll()
+
                         // Todo lo demás queda cerrado
                         .anyRequest().denyAll()
                 )

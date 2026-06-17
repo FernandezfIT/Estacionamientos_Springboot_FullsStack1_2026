@@ -16,17 +16,31 @@ import org.springframework.web.bind.annotation.RestController;
 import cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.dto.request.MovimientoCreateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.dto.response.MovimientoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.service.MovimientoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/movimientos")
 @RequiredArgsConstructor
+@Tag(name = "Movimientos", description = "Operaciones para registrar y consultar movimientos del sistema")
 public class MovimientoController {
 
     private final MovimientoService movimientoService;
 
     // ENDPOINT que crea un movimiento
+    @Operation(
+        summary = "Crear movimiento",
+        description = "Registra un movimiento en la bitácora central del sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Movimiento creado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @PostMapping
     public ResponseEntity<MovimientoResponse> crearMovimiento(
             @Valid @RequestBody MovimientoCreateRequest request
@@ -36,6 +50,14 @@ public class MovimientoController {
     }
 
     // ENDPOINT que muestra todos los movimientos
+    @Operation(
+        summary = "Listar movimientos",
+        description = "Obtiene todos los movimientos registrados"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos listados correctamente"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping
     public ResponseEntity<List<MovimientoResponse>> listarMovimientos() {
         List<MovimientoResponse> movimientos = movimientoService.listarMovimientos();
@@ -43,6 +65,15 @@ public class MovimientoController {
     }
 
     // ENDPOINT para listar movimientos por fecha
+    @Operation(
+        summary = "Listar movimientos por Fecha",
+        description = "Obtiene movimientos filtrados por fecha"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/fecha/{fechaMovimiento}")
     public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorFecha(
             @PathVariable
@@ -54,6 +85,15 @@ public class MovimientoController {
     }
 
     // ENDPOINT para buscar movimiento por id
+    @Operation(
+        summary = "Buscar movimientos por ID",
+        description = "Obtiene movimientos filtrados por ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/{idMovimiento}")
     public ResponseEntity<MovimientoResponse> obtenerMovimientoPorId(
             @PathVariable Long idMovimiento
@@ -63,6 +103,14 @@ public class MovimientoController {
     }
 
     // EDPOINT que muestra todos los movimientos asociados a un tipo (Acceso, liberacion, reserva, etc)
+    @Operation(
+        summary = "Listar movimientos por tipo",
+        description = "Obtiene movimientos filtrados por tipo, por ejemplo ACCESO, RESERVA o SALIDA"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/tipo/{tipoMovimiento}")
     public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorTipo(
             @PathVariable String tipoMovimiento
@@ -72,6 +120,15 @@ public class MovimientoController {
     }
 
     // ENDPOINT que muestra todos los movimientos asociados a un RUT
+        @Operation(
+        summary = "Listar movimientos por RUT",
+        description = "Obtiene movimientos filtrados por RUT"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/rut/{rutUsuario}")
     public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorRut(
             @PathVariable String rutUsuario
@@ -81,6 +138,15 @@ public class MovimientoController {
     }
 
     // ENDPOINT que muestra todos los moviemientos asociados a una patente
+    @Operation(
+        summary = "Listar movimientos por Patente",
+        description = "Obtiene movimientos filtrados por Patente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/patente/{patente}")
     public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorPatente(
             @PathVariable String patente
@@ -90,6 +156,15 @@ public class MovimientoController {
     }
 
     // EDNPOINT que muestra todos los movimientos asociados a una plaza
+    @Operation(
+        summary = "Listar movimientos por Plaza",
+        description = "Obtiene movimientos filtrados por Plaza"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/plaza/{codigoPlaza}")
     public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorCodigoPlaza(
             @PathVariable String codigoPlaza
@@ -99,6 +174,15 @@ public class MovimientoController {
     }
 
     // ENDPOINT que muestra todos los movimientos generados por un tipo de microservicio
+    @Operation(
+        summary = "Listar movimientos por Origen",
+        description = "Obtiene movimientos filtrados por Origen"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movimientos encontrados"),
+        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/origen/{servicioOrigen}")
     public ResponseEntity<List<MovimientoResponse>> listarMovimientosPorServicioOrigen(
             @PathVariable String servicioOrigen

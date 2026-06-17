@@ -20,17 +20,32 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioInternoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.dto.response.UsuarioResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/usuarios")
 @RequiredArgsConstructor
+@Tag(name = "Usuarios", description = "Operaciones para gestionar usuarios, roles y consultas internas")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
+    
     // ENPOINT QUE LISTA TODOS LOS USUARIOS
+    @Operation(
+        summary = "Listar usuarios",
+        description = "Obtiene la lista completa de usuarios registrados en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuarios listados correctamente"),
+        @ApiResponse(responseCode = "403", description = "No autorizado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping
     public ResponseEntity<List<UsuarioResponse>> listarUsuarios() {
         List<UsuarioResponse> usuarios = usuarioService.listarUsuarios();
@@ -38,6 +53,15 @@ public class UsuarioController {
     }
 
     // ENDPOINT QUE DEVUELVE EL USUARIO BUSCADO POR ID si es que existe
+    @Operation(
+        summary = "Buscar usuario por ID",
+        description = "Obtiene un usuario específico usando su ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/{idUsuario}")
     public ResponseEntity<UsuarioResponse> obtenerUsuarioPorId(@PathVariable Long idUsuario) {
         UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(idUsuario);
@@ -45,6 +69,16 @@ public class UsuarioController {
     }
 
     // ENDPOINT PARA CREAR USUARIO
+    @Operation(
+        summary = "Crear usuario",
+        description = "Registra un nuevo usuario en el sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuario creado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "409", description = "Usuario duplicado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @PostMapping
     public ResponseEntity<UsuarioResponse> crearUsuario(@Valid @RequestBody UsuarioCreateRequest request) {
         UsuarioResponse usuarioCreado = usuarioService.crearUsuario(request);
@@ -52,6 +86,15 @@ public class UsuarioController {
     }
 
     // ENDPOINT PARA MODIFICAR USUARIO BUSCADO POR ID si es que existe
+    @Operation(
+        summary = "Editar usuario",
+        description = "Editar datos de un usuario ya existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuario Actualizado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @PutMapping("/{idUsuario}")
     public ResponseEntity<UsuarioResponse> actualizarUsuario(
             @PathVariable Long idUsuario,

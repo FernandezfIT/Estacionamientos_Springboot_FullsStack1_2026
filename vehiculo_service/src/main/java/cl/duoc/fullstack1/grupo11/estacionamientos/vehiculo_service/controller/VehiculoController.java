@@ -17,16 +17,30 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.vehiculo_service.dto.request.
 import cl.duoc.fullstack1.grupo11.estacionamientos.vehiculo_service.dto.request.VehiculoUpdateRequest;
 import cl.duoc.fullstack1.grupo11.estacionamientos.vehiculo_service.dto.response.VehiculoResponse;
 import cl.duoc.fullstack1.grupo11.estacionamientos.vehiculo_service.service.VehiculoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/vehiculos")
 @RequiredArgsConstructor
+@Tag(name = "Usuarios", description = "Operaciones para gestionar usuarios, roles y consultas internas")
 public class VehiculoController {
 
     private final VehiculoService vehiculoService;
 
+    // ENDPOINT para listar todos los vehículos
+    @Operation(
+        summary = "Listar vehículos",
+        description = "Obtiene todos los vehículos registrados"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Vehículos listados correctamente"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping
     public ResponseEntity<List<VehiculoResponse>> listarVehiculos() {
         List<VehiculoResponse> vehiculos = vehiculoService.listarVehiculos();
@@ -41,6 +55,16 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculo);
     }
 
+    // ENDPOINT para buscar vehículo por patente
+    @Operation(
+        summary = "Buscar vehículo por patente",
+        description = "Obtiene un vehículo usando su patente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Vehículo encontrado"),
+        @ApiResponse(responseCode = "404", description = "Vehículo no encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @GetMapping("/patente/{patente}")
     public ResponseEntity<VehiculoResponse> obtenerVehiculoPorPatente(
             @PathVariable String patente
@@ -57,6 +81,18 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculos);
     }
 
+   
+    @Operation(
+        summary = "Crear vehículo",
+        description = "Registra un vehículo asociado a un usuario existente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Vehículo creado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "404", description = "Usuario o tipo de vehículo no encontrado"),
+        @ApiResponse(responseCode = "409", description = "Patente duplicada"),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     @PostMapping
     public ResponseEntity<VehiculoResponse> crearVehiculo(
             @Valid @RequestBody VehiculoCreateRequest request

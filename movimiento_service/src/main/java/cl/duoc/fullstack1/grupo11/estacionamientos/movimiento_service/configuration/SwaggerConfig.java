@@ -1,4 +1,4 @@
-package cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.configuration;
+package cl.duoc.fullstack1.grupo11.estacionamientos.movimiento_service.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +18,9 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("API de Usuarios")
+                        .title("API de Movimientos")
                         .version("1.0")
-                        .description("Documentación de usuario_service para gestión de usuarios y roles"))
+                        .description("Documentación de movimiento_service para registro y consulta de movimientos"))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName, new SecurityScheme()

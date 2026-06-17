@@ -30,17 +30,17 @@ public class SecurityConfig {
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                                 .authorizeHttpRequests(auth -> auth
-
-                                                // Acceso Publico para Swagger
+                                        
+                                                // Configuración Swagger
                                                 .requestMatchers("api/v1/public/**").permitAll()
                                                 .requestMatchers("/api/v1/public/**",
-                                                                "/doc/swagger-ui.html",
-                                                                "/doc/swagger-ui/index.html",
-                                                                "/doc/swagger-ui/**",
-                                                                "/swagger-ui.html",
-                                                                "/swagger-ui/**",
-                                                                "/v3/api-docs",
-                                                                "/v3/api-docs/**")
+                                                "/doc/swagger-ui.html",
+                                                "/doc/swagger-ui/index.html",
+                                                "/doc/swagger-ui/**",
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs",
+                                                "/v3/api-docs/**")
                                                 .permitAll()
 
                                                 // Endpoint interno usado por auth_service para validar login

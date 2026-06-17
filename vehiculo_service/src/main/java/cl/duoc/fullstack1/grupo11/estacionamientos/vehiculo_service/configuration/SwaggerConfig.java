@@ -1,4 +1,4 @@
-package cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.configuration;
+package cl.duoc.fullstack1.grupo11.estacionamientos.vehiculo_service.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +18,9 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("API de Usuarios")
+                        .title("API de Vehículos")
                         .version("1.0")
-                        .description("Documentación de usuario_service para gestión de usuarios y roles"))
+                        .description("Documentación de vehiculo_service para gestión de vehículos y tipos de vehículo"))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName, new SecurityScheme()
