@@ -32,7 +32,6 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                         
                                                 // Configuración Swagger
-                                                .requestMatchers("api/v1/public/**").permitAll()
                                                 .requestMatchers("/api/v1/public/**",
                                                 "/doc/swagger-ui.html",
                                                 "/doc/swagger-ui/index.html",

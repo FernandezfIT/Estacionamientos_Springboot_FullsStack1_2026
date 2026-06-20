@@ -2,8 +2,8 @@ package cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.service;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +23,15 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.exception.Vehi
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.model.Acceso;
 import cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service.repository.AccesoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccesoService {
 
     private static final String ESTADO_AUTORIZADO = "AUTORIZADO";
     private static final String OBSERVACION_ACCESO_AUTORIZADO = "Acceso autorizado correctamente";
-
-    private static final Logger log = LoggerFactory.getLogger(AccesoService.class);
 
     private static final String TIPO_MOVIMIENTO_ACCESO = "ACCESO";
     private static final String SERVICIO_ORIGEN = "acceso_service";
@@ -44,44 +44,85 @@ public class AccesoService {
 
     @Transactional(readOnly = true)
     public List<AccesoResponse> listarAccesos() {
-        return accesoRepository.findAll()
-                .stream()
+        String usuarioLogueado = obtenerUsuarioAutenticado();
+
+        log.info("Iniciando listado de accesos");
+        log.info("Usuario={} realizó listado de accesos", usuarioLogueado);
+
+        List<Acceso> accesos = accesoRepository.findAll();
+
+        log.info("Cantidad de accesos encontrados={}", accesos.size());
+
+        return accesos.stream()
                 .map(this::mapToAccesoResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public AccesoResponse obtenerAccesoPorId(Long idAcceso) {
+        String usuarioLogueado = obtenerUsuarioAutenticado();
+    
+        log.info("Iniciando búsqueda de acceso idAcceso={}", idAcceso);
+        log.info("Usuario={} realizó búsqueda de acceso por ID", usuarioLogueado);
+    
         Acceso acceso = buscarAccesoPorId(idAcceso);
+    
+        log.info("Acceso encontrado idAcceso={} rut={} patente={}",
+                acceso.getIdAcceso(),
+                acceso.getRutUsuario(),
+                acceso.getPatente()
+        );
+    
         return mapToAccesoResponse(acceso);
     }
 
     @Transactional(readOnly = true)
     public List<AccesoResponse> listarAccesosPorRut(String rut) {
+        String usuarioLogueado = obtenerUsuarioAutenticado();
         String rutNormalizado = normalizarTexto(rut);
 
-        return accesoRepository.findByRutUsuario(rutNormalizado)
-                .stream()
+        log.info("Iniciando listado de accesos por RUT={}", rutNormalizado);
+        log.info("Usuario={} realizó búsqueda de accesos por RUT", usuarioLogueado);
+
+        List<Acceso> accesos = accesoRepository.findByRutUsuario(rutNormalizado);
+
+        log.info("Cantidad de accesos encontrados por RUT={} cantidad={}", rutNormalizado, accesos.size());
+
+        return accesos.stream()
                 .map(this::mapToAccesoResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<AccesoResponse> listarAccesosPorPatente(String patente) {
+        String usuarioLogueado = obtenerUsuarioAutenticado();
         String patenteNormalizada = normalizarPatente(patente);
 
-        return accesoRepository.findByPatente(patenteNormalizada)
-                .stream()
+        log.info("Iniciando listado de accesos por patente={}", patenteNormalizada);
+        log.info("Usuario={} realizó búsqueda de accesos por patente", usuarioLogueado);
+
+        List<Acceso> accesos = accesoRepository.findByPatente(patenteNormalizada);
+
+        log.info("Cantidad de accesos encontrados por patente={} cantidad={}", patenteNormalizada, accesos.size());
+
+        return accesos.stream()
                 .map(this::mapToAccesoResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<AccesoResponse> listarAccesosPorCodigoPlaza(String codigoPlaza) {
+        String usuarioLogueado = obtenerUsuarioAutenticado();
         String codigoNormalizado = normalizarCodigoPlaza(codigoPlaza);
 
-        return accesoRepository.findByCodigoPlaza(codigoNormalizado)
-                .stream()
+        log.info("Iniciando listado de accesos por codigoPlaza={}", codigoNormalizado);
+        log.info("Usuario={} realizó búsqueda de accesos por plaza", usuarioLogueado);
+
+        List<Acceso> accesos = accesoRepository.findByCodigoPlaza(codigoNormalizado);
+
+        log.info("Cantidad de accesos encontrados por codigoPlaza={} cantidad={}", codigoNormalizado, accesos.size());
+
+        return accesos.stream()
                 .map(this::mapToAccesoResponse)
                 .toList();
     }
@@ -91,18 +132,34 @@ public class AccesoService {
             AccesoCreateRequest request,
             String authorizationHeader
     ) {
+        String usuarioLogueado = obtenerUsuarioAutenticado();
         String rutNormalizado = normalizarTexto(request.getRut());
         String patenteNormalizada = normalizarPatente(request.getPatente());
         String codigoPlazaNormalizado = normalizarCodigoPlaza(request.getCodigoPlaza());
 
+        log.info(
+                "Iniciando registro de acceso rut={} patente={} codigoPlaza={}",
+                rutNormalizado,
+                patenteNormalizada,
+                codigoPlazaNormalizado
+        );
+        log.info("Usuario={} realizó registro de acceso", usuarioLogueado);
+
         UsuarioInternoResponse usuario = usuarioClient.buscarUsuarioPorRut(rutNormalizado);
         validarRespuestaUsuario(usuario, rutNormalizado);
+
+        log.info("Usuario validado para acceso idUsuario={} rut={}", usuario.getIdUsuario(), usuario.getRut());
 
         VehiculoInternoResponse vehiculo = vehiculoClient.buscarVehiculoPorPatente(
                 patenteNormalizada,
                 authorizationHeader
         );
         validarRespuestaVehiculo(vehiculo, patenteNormalizada);
+
+        log.info("Vehículo validado para acceso idVehiculo={} patente={}",
+                vehiculo.getIdVehiculo(),
+                vehiculo.getPatente()
+        );
 
         validarVehiculoPerteneceUsuario(usuario, vehiculo);
 
@@ -111,6 +168,11 @@ public class AccesoService {
                 authorizationHeader
         );
         validarRespuestaPlaza(plazaOcupada, codigoPlazaNormalizado);
+
+        log.info("Plaza ocupada correctamente idPlaza={} codigoPlaza={}",
+                plazaOcupada.getIdPlaza(),
+                plazaOcupada.getCodigoPlaza()
+        );
 
         Acceso acceso = new Acceso();
         acceso.setIdUsuario(usuario.getIdUsuario());
@@ -124,6 +186,14 @@ public class AccesoService {
 
         Acceso accesoGuardado = accesoRepository.save(acceso);
 
+        log.info(
+                "Acceso guardado correctamente idAcceso={} rut={} patente={} codigoPlaza={}",
+                accesoGuardado.getIdAcceso(),
+                accesoGuardado.getRutUsuario(),
+                accesoGuardado.getPatente(),
+                accesoGuardado.getCodigoPlaza()
+        );
+
         registrarMovimientoAcceso(accesoGuardado, authorizationHeader);
 
         return mapToAccesoResponse(accesoGuardado);
@@ -131,9 +201,13 @@ public class AccesoService {
 
     private Acceso buscarAccesoPorId(Long idAcceso) {
         return accesoRepository.findById(idAcceso)
-                .orElseThrow(() -> new AccesoNoEncontradoException(
-                        "No existe un acceso con ID " + idAcceso
-                ));
+                .orElseThrow(() -> {
+                    log.warn("Acceso no encontrado idAcceso={}", idAcceso);
+
+                    return new AccesoNoEncontradoException(
+                            "No existe un acceso con ID " + idAcceso
+                    );
+                });
     }
 
     private void validarVehiculoPerteneceUsuario(
@@ -141,6 +215,13 @@ public class AccesoService {
             VehiculoInternoResponse vehiculo
     ) {
         if (!vehiculo.getIdUsuario().equals(usuario.getIdUsuario())) {
+            log.warn(
+                    "Vehículo no pertenece al usuario idUsuario={} idVehiculo={} idUsuarioVehiculo={}",
+                    usuario.getIdUsuario(),
+                    vehiculo.getIdVehiculo(),
+                    vehiculo.getIdUsuario()
+            );
+
             throw new VehiculoNoPerteneceUsuarioException(
                     "El vehículo indicado no pertenece al usuario informado"
             );
@@ -152,6 +233,8 @@ public class AccesoService {
             String rut
     ) {
         if (usuario == null || usuario.getIdUsuario() == null) {
+            log.warn("Respuesta inválida desde usuario_service para rut={}", rut);
+
             throw new MicroservicioNoDisponibleException(
                     "usuario_service respondió sin datos válidos para el RUT " + rut
             );
@@ -163,6 +246,8 @@ public class AccesoService {
             String patente
     ) {
         if (vehiculo == null || vehiculo.getIdVehiculo() == null || vehiculo.getIdUsuario() == null) {
+            log.warn("Respuesta inválida desde vehiculo_service para patente={}", patente);
+
             throw new MicroservicioNoDisponibleException(
                     "vehiculo_service respondió sin datos válidos para la patente " + patente
             );
@@ -174,6 +259,8 @@ public class AccesoService {
             String codigoPlaza
     ) {
         if (plaza == null || plaza.getIdPlaza() == null) {
+            log.warn("Respuesta inválida desde plaza_service para codigoPlaza={}", codigoPlaza);
+
             throw new MicroservicioNoDisponibleException(
                     "plaza_service respondió sin datos válidos para la plaza " + codigoPlaza
             );
@@ -208,10 +295,12 @@ public class AccesoService {
     }
 
     private void registrarMovimientoAcceso(
-        Acceso acceso,
-        String authorizationHeader
+            Acceso acceso,
+            String authorizationHeader
     ) {
         try {
+            log.info("Registrando movimiento ACCESO para idAcceso={}", acceso.getIdAcceso());
+
             MovimientoCreateRequest movimientoRequest = new MovimientoCreateRequest(
                     TIPO_MOVIMIENTO_ACCESO,
                     acceso.getIdUsuario(),
@@ -224,15 +313,26 @@ public class AccesoService {
                     SERVICIO_ORIGEN,
                     "Ingreso autorizado al estacionamiento"
             );
-        
+
             movimientoClient.registrarMovimiento(movimientoRequest, authorizationHeader);
-        
+
+            log.info("Movimiento ACCESO registrado correctamente para idAcceso={}", acceso.getIdAcceso());
+
         } catch (Exception ex) {
             log.warn(
-                    "No fue posible registrar movimiento de acceso para idAcceso {}. Motivo: {}",
+                    "No fue posible registrar movimiento de acceso para idAcceso={}. Motivo={}",
                     acceso.getIdAcceso(),
                     ex.getMessage()
             );
         }
+    }
+    private String obtenerUsuarioAutenticado() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null || auth.getName() == null) {
+        return "usuario-no-autenticado";
+    }
+
+    return auth.getName();
     }
 }

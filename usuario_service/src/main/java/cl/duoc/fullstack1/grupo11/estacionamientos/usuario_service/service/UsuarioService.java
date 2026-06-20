@@ -2,6 +2,8 @@ package cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.service;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +22,7 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.model.Usuario
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.repository.RolRepository;
 import cl.duoc.fullstack1.grupo11.estacionamientos.usuario_service.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @RequiredArgsConstructor
@@ -96,7 +95,7 @@ public class UsuarioService {
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        log.info("Se crea Usuario ID={}", usuario.getIdUsuario());
+        log.info("Usuario creado correctamente idUsuario={}", usuarioGuardado.getIdUsuario());
         return mapToUsuarioResponse(usuarioGuardado); // Devuelve UsuarioRepsonse sin Pass
     }
 
@@ -139,13 +138,27 @@ public class UsuarioService {
 
     @Transactional
     public void eliminarUsuario(Long idUsuario) {
+        String usuarioLogueado = obtenerUsuarioAutenticado();
+
+        log.info("Iniciando eliminación de usuario idUsuario={}", idUsuario);
+        log.info("Usuario={} realizó eliminación de usuario", usuarioLogueado);
+
         Usuario usuario = buscarUsuarioPorId(idUsuario);
         usuarioRepository.delete(usuario);
+
+        log.info("Usuario eliminado correctamente idUsuario={}", idUsuario);
     }
 
     @Transactional(readOnly = true)
     public UsuarioExisteResponse existeUsuarioPorId(Long idUsuario) {
+        log.info("Consulta interna para validar existencia de usuario idUsuario={}", idUsuario);
+
         boolean existe = usuarioRepository.existsById(idUsuario);
+
+        if (!existe) {
+            log.warn("Consulta interna: usuario no existe idUsuario={}", idUsuario);
+        }
+
         return new UsuarioExisteResponse(idUsuario, existe);
     }
 
@@ -153,8 +166,15 @@ public class UsuarioService {
     public UsuarioAuthResponse obtenerUsuarioAuthPorEmail(String email) {
         String emailNormalizado = normalizarEmail(email);
 
+        log.info("Consulta interna de autenticación para email={}", emailNormalizado);
+
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado)
-                .orElseThrow(() -> new UsuarioNoEncontradoException("No existe un usuario con el email indicado"));
+                .orElseThrow(() -> {
+                    log.warn("Usuario no encontrado para autenticación email={}", emailNormalizado);
+                    return new UsuarioNoEncontradoException("No existe un usuario con el email indicado");
+                });
+
+        log.info("Usuario encontrado para autenticación idUsuario={}", usuario.getIdUsuario());
 
         return mapToUsuarioAuthResponse(usuario);
     }
@@ -163,9 +183,17 @@ public class UsuarioService {
     public UsuarioInternoResponse obtenerUsuarioInternoPorRut(String rut) {
         String rutNormalizado = normalizarTexto(rut);
 
+        log.info("Consulta interna de usuario por RUT={}", rutNormalizado);
+
         Usuario usuario = usuarioRepository.findByRut(rutNormalizado)
-                .orElseThrow(() -> new UsuarioNoEncontradoException(
-                        "No existe un usuario con el RUT " + rutNormalizado));
+                .orElseThrow(() -> {
+                    log.warn("Usuario no encontrado por RUT={}", rutNormalizado);
+                    return new UsuarioNoEncontradoException(
+                            "No existe un usuario con el RUT " + rutNormalizado
+                    );
+                });
+
+        log.info("Usuario encontrado por RUT={} idUsuario={}", rutNormalizado, usuario.getIdUsuario());
 
         return mapToUsuarioInternoResponse(usuario);
     }
@@ -181,7 +209,7 @@ public class UsuarioService {
     private Rol buscarRolPorId(Long idRol) {
         return rolRepository.findById(idRol)
                 .orElseThrow(() -> {
-                    log.warn("Usuario no encontrado id={}", idRol);
+                    log.warn("Rol no encontrado idRol={}", idRol);
                     return new RolNoEncontradoException("No existe un rol con ID " + idRol);
                 });
     }
@@ -259,4 +287,14 @@ public class UsuarioService {
     private String normalizarTexto(String texto) {
         return texto.trim();
     }
+
+    private String obtenerUsuarioAutenticado() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null || auth.getName() == null) {
+        return "usuario-no-autenticado";
+    }
+
+    return auth.getName();
+}
 }

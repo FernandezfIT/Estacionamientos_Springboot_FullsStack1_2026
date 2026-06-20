@@ -49,7 +49,6 @@ public class SecurityConfig {
                         .hasAnyAuthority(JEFE_SEGURIDAD, JEFE_SSDD, GUARDIA)
 
                         // Configuración Swagger
-                        .requestMatchers("api/v1/public/**").permitAll()
                         .requestMatchers("/api/v1/public/**",
                         "/doc/swagger-ui.html",
                         "/doc/swagger-ui/index.html",

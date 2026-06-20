@@ -26,9 +26,11 @@ import cl.duoc.fullstack1.grupo11.estacionamientos.cierre_service.model.Cierre;
 import cl.duoc.fullstack1.grupo11.estacionamientos.cierre_service.repository.CierreRepository;
 import cl.duoc.fullstack1.grupo11.estacionamientos.cierre_service.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CierreService {
 
     private static final String ESTADO_DISPONIBLE = "Disponible";
@@ -56,6 +58,13 @@ public class CierreService {
         String emailUsuarioEjecutor = jwtService.obtenerEmailDesdeToken(token);
         String rolEjecutor = jwtService.obtenerRolDesdeToken(token);
 
+        log.info(
+            "Iniciando cierre operativo idUsuarioEjecutor={} email={} rol={}",
+            idUsuarioEjecutor,
+            emailUsuarioEjecutor,
+            rolEjecutor
+        );
+
         LocalDateTime fechaHoraCierre = LocalDateTime.now();
 
         List<PlazaInternaResponse> plazasAntesDelCierre = plazaClient.listarPlazas(authorizationHeader);
@@ -65,11 +74,21 @@ public class CierreService {
                 authorizationHeader
         );
 
+        log.info("Total de plazas ocupadas liberadas={}", totalPlazasOcupadasLiberadas);
+
         List<ReservaInternaResponse> reservas = reservaClient.listarReservas(authorizationHeader);
+
+        log.info("Plazas obtenidas antes del cierre cantidad={}", plazasAntesDelCierre.size());
 
         ResultadoLimpiezaReservas resultadoReservas = eliminarReservasYLiberarPlazas(
                 reservas,
                 authorizationHeader
+        );
+
+        log.info(
+            "Resultado limpieza reservas totalReservasEliminadas={} totalPlazasReservadasLiberadas={}",
+            resultadoReservas.getTotalReservasEliminadas(),
+            resultadoReservas.getTotalPlazasReservadasLiberadas()
         );
 
         //ReporteResumenResponse resumenReporte = reporteClient.obtenerResumen(authorizationHeader);
@@ -78,6 +97,12 @@ public class CierreService {
                 fechaHoraCierre.toLocalDate(),
                 authorizationHeader
         );
+
+        if (resumenReporte == null) {
+            log.warn("reporte_service devolvió resumen null para fecha={}", fechaHoraCierre.toLocalDate());
+        } else {
+            log.info("Resumen diario obtenido desde reporte_service fecha={}", fechaHoraCierre.toLocalDate());
+        }
 
         List<PlazaInternaResponse> plazasDespuesDelCierre = plazaClient.listarPlazas(authorizationHeader);
 
@@ -103,6 +128,13 @@ public class CierreService {
         cierre.setPlazasOcupadasFinal(toInteger(plazasOcupadasFinal));
         cierre.setPlazasReservadasFinal(toInteger(plazasReservadasFinal));
 
+        log.info(
+                "Estado final de plazas disponibles={} ocupadas={} reservadas={}",
+                plazasDisponiblesFinal,
+                plazasOcupadasFinal,
+                plazasReservadasFinal
+        );
+
         cierre.setTotalMovimientos(obtenerTotalMovimientos(resumenReporte));
         cierre.setTotalAccesos(obtenerTotalAccesos(resumenReporte));
         cierre.setTotalSalidas(obtenerTotalSalidas(resumenReporte));
@@ -114,27 +146,49 @@ public class CierreService {
 
         Cierre cierreGuardado = cierreRepository.save(cierre);
 
+        log.info(
+                "Cierre operativo guardado correctamen te idCierre={} fechaCierre={} ejecutor={}",
+                cierreGuardado.getIdCierre(),
+                cierreGuardado.getFechaCierre(),
+                cierreGuardado.getEmailUsuarioEjecutor()
+        );
+
         return mapToCierreResponse(cierreGuardado);
     }
 
     @Transactional(readOnly = true)
     public List<CierreResponse> listarCierres() {
-        return cierreRepository.findAll()
-                .stream()
+        log.info("Iniciando listado de cierres");
+
+        List<Cierre> cierres = cierreRepository.findAll();
+
+        log.info("Cantidad de cierres encontrados={}", cierres.size());
+
+        return cierres.stream()
                 .map(this::mapToCierreResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public CierreResponse obtenerCierrePorId(Long idCierre) {
+        log.info("Iniciando búsqueda de cierre idCierre={}", idCierre);
+
         Cierre cierre = buscarCierrePorId(idCierre);
+
+        log.info("Cierre encontrado idCierre={} fechaCierre={}", cierre.getIdCierre(), cierre.getFechaCierre());
+
         return mapToCierreResponse(cierre);
     }
 
     @Transactional(readOnly = true)
     public List<CierreResponse> listarCierresPorFecha(LocalDate fechaCierre) {
-        return cierreRepository.findByFechaCierre(fechaCierre)
-                .stream()
+        log.info("Iniciando listado de cierres por fechaCierre={}", fechaCierre);
+
+        List<Cierre> cierres = cierreRepository.findByFechaCierre(fechaCierre);
+
+        log.info("Cantidad de cierres encontrados para fechaCierre={} cantidad={}", fechaCierre, cierres.size());
+
+        return cierres.stream()
                 .map(this::mapToCierreResponse)
                 .toList();
     }
@@ -151,6 +205,11 @@ public class CierreService {
             }
 
             if (ESTADO_OCUPADA.equalsIgnoreCase(plaza.getEstado())) {
+                log.info("Liberando plaza ocupada idPlaza={} codigoPlaza={}",
+                        plaza.getIdPlaza(),
+                        plaza.getCodigoPlaza()
+                );
+
                 plazaClient.actualizarEstadoPlaza(
                         plaza.getIdPlaza(),
                         ESTADO_DISPONIBLE,
@@ -186,6 +245,8 @@ public class CierreService {
             totalReservasEliminadas++;
 
             if (idPlaza != null && idsPlazasReservadasLiberadas.add(idPlaza)) {
+                log.info("Liberando plaza reservada por cierre idPlaza={}", idPlaza);
+
                 plazaClient.actualizarEstadoPlaza(
                         idPlaza,
                         ESTADO_DISPONIBLE,
@@ -212,9 +273,13 @@ public class CierreService {
 
     private Cierre buscarCierrePorId(Long idCierre) {
         return cierreRepository.findById(idCierre)
-                .orElseThrow(() -> new CierreNoEncontradoException(
-                        "No existe un cierre con ID " + idCierre
-                ));
+                .orElseThrow(() -> {
+                    log.warn("Cierre no encontrado idCierre={}", idCierre);
+
+                    return new CierreNoEncontradoException(
+                            "No existe un cierre con ID " + idCierre
+                    );
+                });
     }
 
     private CierreResponse mapToCierreResponse(Cierre cierre) {
@@ -282,13 +347,21 @@ public class CierreService {
 
     private String serializarResumenReporte(ReporteResumenResponse resumenReporte) {
         if (resumenReporte == null) {
+            log.warn("No se serializa resumenReporte porque llegó null");
             return null;
         }
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(resumenReporte);
+            String resumenSerializado = mapper.writeValueAsString(resumenReporte);
+
+            log.info("Resumen de reporte serializado correctamente");
+
+            return resumenSerializado;
+
         } catch (JsonProcessingException ex) {
+            log.warn("No fue posible serializar el resumen recibido desde reporte_service. Motivo={}", ex.getMessage());
+
             return "No fue posible serializar el resumen recibido desde reporte_service";
         }
     }
