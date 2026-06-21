@@ -1,4 +1,4 @@
-package cl.duoc.fullstack1.grupo11.estacionamientos.acceso_service;
+package cl.duoc.fullstack1.grupo11.estacionamientos.api_gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class AccesoServiceApplication {
+public class ApiGatewayApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AccesoServiceApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(ApiGatewayApplication.class, args);
+    }
 }
