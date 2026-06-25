@@ -71,6 +71,7 @@ eureka:
   instance:
     prefer-ip-address: true
     status-page-url-path: /doc/swagger-ui.html
+    instance-id: localhost:${spring.application.name}:${server.port}
 
 management:
   endpoints:
