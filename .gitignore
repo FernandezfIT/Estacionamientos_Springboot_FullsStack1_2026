@@ -19,3 +19,11 @@ Thumbs.db
 *.sql.bak
 *_backup.sql
 *_dump.sql
+
+# Logs
+logs/
+**/logs/
+*.log
+*.log.*
+**/*.log
+**/*.log.*
