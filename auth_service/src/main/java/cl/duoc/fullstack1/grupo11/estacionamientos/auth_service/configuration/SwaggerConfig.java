@@ -12,9 +12,9 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI(){
         return new OpenAPI()
             .info(new Info()
-        .title("API de autentificion")
+        .title("API de autenticaficion")
         .version("1.0")
-        .description("Api que entrega el token JWT")
+        .description("API que proporciona el token JWT")
         );   
     }  
     

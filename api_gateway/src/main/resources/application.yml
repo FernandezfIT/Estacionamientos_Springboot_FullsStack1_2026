@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: API-GATEWAY
+    name: api-gateway
 
   cloud:
     gateway:
@@ -11,52 +11,52 @@ spring:
         webmvc:
           routes:
             - id: auth-service
-              uri: lb://AUTH-SERVICE
+              uri: lb://auth-service
               predicates:
                 - Path=/api/v1/auth/**
 
             - id: usuario-service
-              uri: lb://USUARIO-SERVICE
+              uri: lb://usuario-service
               predicates:
                 - Path=/api/v1/usuarios/**,/api/v1/roles/**,/api/v1/public/**
 
             - id: vehiculo-service
-              uri: lb://VEHICULO-SERVICE
+              uri: lb://vehiculo-service
               predicates:
                 - Path=/api/v1/vehiculos/**,/api/v1/tipos-vehiculo/**
 
             - id: acceso-service
-              uri: lb://ACCESO-SERVICE
+              uri: lb://acceso-service
               predicates:
                 - Path=/api/v1/accesos/**
 
             - id: movimiento-service
-              uri: lb://MOVIMIENTO-SERVICE
+              uri: lb://movimiento-service
               predicates:
                 - Path=/api/v1/movimientos/**
             
             - id: plaza-service
-              uri: lb://PLAZA-SERVICE
+              uri: lb://plaza-service
               predicates:
                 - Path=/api/v1/plazas/**
 
             - id: reserva-service
-              uri: lb://RESERVA-SERVICE
+              uri: lb://reserva-service
               predicates:
                 - Path=/api/v1/reservas/**
 
             - id: liberacion-service
-              uri: lb://LIBERACION-SERVICE
+              uri: lb://liberacion-service
               predicates:
                 - Path=/api/v1/liberaciones/**
 
             - id: reporte-service
-              uri: lb://REPORTE-SERVICE
+              uri: lb://reporte-service
               predicates:
                 - Path=/api/v1/reportes/**
                 
             - id: cierre-service
-              uri: lb://CIERRE-SERVICE
+              uri: lb://cierre-service
               predicates:
                 - Path=/api/v1/cierres/**
 
@@ -70,6 +70,7 @@ eureka:
 
   instance:
     prefer-ip-address: true
+    status-page-url-path: /doc/swagger-ui.html
 
 management:
   endpoints:
