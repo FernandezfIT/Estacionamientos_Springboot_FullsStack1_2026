@@ -3,27 +3,59 @@ services:
     image: mysql:8.4
     container_name: fullstack_mysql_local
     restart: unless-stopped
-
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      TZ: America/Santiago
-
+      TZ: ${TZ:-America/Santiago}
     ports:
-      - "${MYSQL_PORT}:3306"
-
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
-
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
-
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+    networks:
+      - estacionamientos-network
+
+  microservicios:
+    build:
+      context: .
+      dockerfile: docker/microservices/Dockerfile
+    container_name: estacionamientos-microservices
+    depends_on:
+      mysql-local:
+        condition: service_healthy
+    ports:
+      - "8761:8761"
+      - "8090:8090"
+      - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+      - "8083:8083"
+      - "8084:8084"
+      - "8085:8085"
+      - "8086:8086"
+      - "8087:8087"
+      - "8088:8088"
+      - "8089:8089"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_DEV_USER: ${MYSQL_DEV_USER}
+      MYSQL_DEV_PASSWORD: ${MYSQL_DEV_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      TZ: ${TZ:-America/Santiago}
+    networks:
+      - estacionamientos-network
 
 volumes:
   mysql_data:
+
+networks:
+  estacionamientos-network:
+    driver: bridge
