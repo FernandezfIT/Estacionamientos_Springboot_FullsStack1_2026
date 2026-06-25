@@ -34,6 +34,31 @@ spring:
               uri: lb://MOVIMIENTO-SERVICE
               predicates:
                 - Path=/api/v1/movimientos/**
+            
+            - id: plaza-service
+              uri: lb://PLAZA-SERVICE
+              predicates:
+                - Path=/api/v1/plazas/**
+
+            - id: reserva-service
+              uri: lb://RESERVA-SERVICE
+              predicates:
+                - Path=/api/v1/reservas/**
+
+            - id: liberacion-service
+              uri: lb://LIBERACION-SERVICE
+              predicates:
+                - Path=/api/v1/liberaciones/**
+
+            - id: reporte-service
+              uri: lb://REPORTE-SERVICE
+              predicates:
+                - Path=/api/v1/reportes/**
+                
+            - id: cierre-service
+              uri: lb://CIERRE-SERVICE
+              predicates:
+                - Path=/api/v1/cierres/**
 
 eureka:
   client:
