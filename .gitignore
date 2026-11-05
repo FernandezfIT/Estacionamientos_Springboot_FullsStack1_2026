@@ -1,12 +1,30 @@
-# Variables locales
+# Variables locales (conservar ejemplos públicos)
 .env
+.env.*
+!.env.ejemplo
+!.env.example
 
-# Java / Maven
+# Java / Maven y salidas de pruebas
 **/target/
+*.class
+*.jar
+*.war
+jacoco.exec
+test-output/
 
 # IDEs
 .vscode/
 .idea/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+
+# Archivos temporales
+*.tmp
+*.swp
+*~
 
 # Logs
 *.log

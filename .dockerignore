@@ -1,7 +1,7 @@
 .git/
 .gitignore
 .env
-.env.ejemplo
+.env.*
 manual-dockerizacion.md
 README.md
 .vscode/
@@ -12,3 +12,16 @@ README.md
 *.log.*
 .DS_Store
 Thumbs.db
+*.class
+*.jar
+*.war
+*.tmp
+*.swp
+*~
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+jacoco.exec
+test-output/
