@@ -49,16 +49,19 @@ flowchart LR
     C[Cliente] --> G[API Gateway :8090]
     G -. consulta de registro .-> E[Eureka :8761]
     G --> A[Auth :8080]
-    G --> S[Servicios de negocio :8081 a :8089]
+    G --> U[Usuario :8081]
+    G --> S[Otros siete servicios persistentes]
+    G --> R[Reporte :8089]
     A -. registro .-> E
+    U -. registro .-> E
     S -. registro .-> E
-    A --> U[Usuario :8081]
-    S --> U
+    R -. registro .-> E
+    A --> U
     U --> D[(usuario_db)]
-    S --> B[(Otros siete esquemas propios)]
+    S --> B[(Siete esquemas propios)]
 ```
 
-El bloque de servicios agrupa Usuario, Vehículo, Plaza, Reserva, Acceso, Movimiento, Liberación, Cierre y Reporte. Las flechas de persistencia no aplican a Reporte; el [diagrama detallado](docs/arquitectura.md) desglosa cada relación. Los puertos directos también están publicados por Compose: Gateway no es la única vía de acceso.
+Vista resumida: el bloque persistente agrupa Vehículo, Plaza, Reserva, Acceso, Movimiento, Liberación y Cierre; cada uno accede solo a su esquema. Reporte no tiene BD. El [diagrama detallado](docs/arquitectura.md) desglosa además las llamadas entre servicios. Los puertos directos también están publicados por Compose: Gateway no es la única vía de acceso.
 
 La configuración Docker ejecuta los doce procesos Java en **un solo contenedor**, junto a otro contenedor MySQL. No es un contenedor por microservicio ni un despliegue productivo validado.
 

@@ -53,6 +53,10 @@ El README anterior permanece consultable en el historial de `78ef4d1`; endpoints
 
 No se probó el flujo HTTP completo, login real, registro en Eureka, enrutamiento efectivo ni Swagger en navegador. La inspección visual final en la página del repositorio/PR queda pendiente. No se afirma disponibilidad operativa por contar con archivos de configuración. Los resultados anteriores no son cifras de cobertura.
 
+## Integridad de la entrega
+
+El diff final comprende únicamente README, documentación y archivos de exclusión. No se eliminan documentos ni se modifican Java, POM, perfiles, Dockerfile, Compose, entrypoint o SQL. `git diff --check` no detecta problemas de espacios; el worktree documental queda limpio tras los commits. La modificación de PlazaServiceTest en la copia original conserva exactamente el mismo hash de diff que antes del trabajo; `main` permanece en `78ef4d1`.
+
 ## Impedimentos y revisión del propietario
 
 Se ampliaron `.gitignore` y `.dockerignore` para variantes de `.env`, artefactos, temporales y salidas de pruebas; Git conserva los ejemplos públicos. No se retiró ningún archivo del seguimiento. Estas exclusiones no corrigen valores sensibles ya versionados en otros archivos.
