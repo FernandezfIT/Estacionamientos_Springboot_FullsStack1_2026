@@ -1,5 +1,7 @@
 # Manual de estandarización de microservicios
 
+> **Documento histórico de diseño y convenciones.** No es un inventario de la implementación actual. En `main` (`78ef4d1`), Auth y Reporte no tienen persistencia de negocio; los módulos no usan dependencias ni perfiles idénticos. Consultar [arquitectura vigente](arquitectura.md) e [instalación](instalacion.md). Los ejemplos de configuración originales no deben reutilizarse como credenciales ni como configuración productiva.
+
 Proyecto: `Estacionamientos_Springboot_FullsStack1_2026`
 
 Este documento define las reglas mínimas que debe seguir cada integrante del equipo al trabajar en los microservicios del proyecto.

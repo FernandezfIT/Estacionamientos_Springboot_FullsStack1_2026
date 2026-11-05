@@ -1,5 +1,7 @@
 # Resumen de avance del proyecto Estacionamientos
 
+> **Documento histórico:** hito temprano de Auth, Usuario y Vehículo, no estado global de `main` en `78ef4d1`. Las afirmaciones de completitud y los siguientes pasos corresponden a esa etapa. Consultar [README vigente](../README.md), [arquitectura](arquitectura.md) y [pruebas ejecutadas](pruebas.md). No reutilizar valores de configuración originales como credenciales.
+
 Este documento resume lo trabajado hasta ahora en los microservicios `auth_service`, `usuario_service` y `vehiculo_service`.
 
 El foco del resumen es indicar las clases creadas o modificadas, su ubicación dentro del microservicio y la función que cumplen dentro de la arquitectura.

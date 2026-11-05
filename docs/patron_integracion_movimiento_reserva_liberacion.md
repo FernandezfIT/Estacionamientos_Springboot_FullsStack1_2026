@@ -1,5 +1,7 @@
 # Patrón de integración con `movimiento_service`
 
+> **Documento histórico de integración.** Conserva el patrón propuesto al equipo; en `main` (`78ef4d1`) ya existen clientes y registros de movimiento desde Reserva y Liberación. Su tolerancia a fallos no garantiza una bitácora completa ni atomicidad entre servicios. Para el estado actual consultar [arquitectura](arquitectura.md) y [pruebas](pruebas.md).
+
 ## Objetivo
 
 Este documento define cómo deben integrarse `reserva_service` y `liberacion_service` con `movimiento_service`.
