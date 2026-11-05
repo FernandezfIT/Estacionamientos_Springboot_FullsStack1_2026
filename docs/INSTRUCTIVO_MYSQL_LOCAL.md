@@ -1,5 +1,7 @@
 # Instructivo: MySQL local con Docker
 
+> **Documento histórico:** guía inicial conservada. Para la versión publicada en `78ef4d1`, consultar [instalación y ejecución](instalacion.md), incluida la preparación de variables y el bloqueo de credenciales SQL. Este antecedente no es una secuencia completa de arranque.
+
 Este proyecto usa MySQL local mediante Docker Compose.
 
 Cada integrante del equipo tendrá su propia base de datos local.
@@ -26,7 +28,8 @@ Cada integrante debe tener instalado:
 ```bash
 git clone https://github.com/FernandezfIT/Estacionamientos_Springboot_FullsStack1_2026.git
 cd Estacionamientos_Springboot_FullsStack1_2026
+```
 
 Copiar archivo .env.ejemplo a .env para configuracion inicial de Docker de MySql
 
-Win PowerShell -> Copy-Item .env.ejemplo .env
+En PowerShell: `Copy-Item .env.ejemplo .env`.
